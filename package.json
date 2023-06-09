@@ -30,5 +30,8 @@
 	],
 	"devDependencies": {
 		"ava": "^5.3.0"
+	},
+	"dependencies": {
+		"got": "^13.0.0"
 	}
 }
