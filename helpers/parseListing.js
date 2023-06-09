@@ -1,5 +1,5 @@
 function parseAvailability(availability) {
-  if (!availability) {
+  if (!availability || typeof availability !== "string") {
       return null;
   }
 
@@ -8,7 +8,13 @@ function parseAvailability(availability) {
 }
 
 function parsePriceText(priceDisplayText) {
-  const regex = /.*\$([0-9\,\.]+(?:k|K|m|M)*).*/;
+  if (!priceDisplayText || typeof priceDisplayText !== "string") {
+      return null;
+  }
+
+  priceDisplayText = priceDisplayText.toLowerCase();
+
+  const regex = /.*\$([0-9\,\.]+(?:k|m)*).*/;
   const priceGroups = priceDisplayText.match(regex);
   const priceText = priceGroups && priceGroups[1] ? priceGroups[1] : null;
 
@@ -17,10 +23,10 @@ function parsePriceText(priceDisplayText) {
   }
 
   let price;
-  if (priceText.endsWith("k") || priceText.endsWith("K")) {
+  if (priceText.endsWith("k")) {
       price = parseFloat(priceText.slice(0, -1).replace(",", ""));
       price *= 1000;
-  } else if (priceText.endsWith("m") || priceText.endsWith("M")) {
+  } else if (priceText.endsWith("m")) {
       price = parseFloat(priceText.slice(0, -1).replace(",", ""));
       price *= 1000000;
   } else {
@@ -31,13 +37,17 @@ function parsePriceText(priceDisplayText) {
 }
 
 function parsePhone(phone) {
-  if (!phone) {
+  if (!phone || typeof phone !== "string") {
       return null;
   }
   return phone.replace(/\s/g, "");
 }
 
 function getLister(lister) {
+  if (!lister || typeof lister !== "object") {
+    return null;
+  }
+
   const listerId = lister.id;
   const name = lister.name;
   const agentId = lister.agentId;
@@ -56,11 +66,12 @@ function getLister(lister) {
 }
 
 function getImage(media) {
-  const sizeToInsertIntoLink = '1144x888-format=webp';
+  if (!media || typeof media !== "object") {
+      return null;
+  }
 
-  return {
-      link: media.templatedUrl?.replace("{size}", sizeToInsertIntoLink)
-  };
+  const sizeToInsertIntoLink = '1144x888-format=webp';
+  return media.templatedUrl?.replace("{size}", sizeToInsertIntoLink);
 }
 
 function getInspection(inspection) {
@@ -86,41 +97,43 @@ export default function parseListing(listing) {
     return null;
   }
 
-  const propertyId = listing.id;
-  const badge = listing.badge?.label;
-  const url = listing._links?.canonical?.href;
+  const propertyId = listing.id ?? null;
+  const badge = listing.badge?.label ?? null;
+  const url = listing._links?.canonical?.href ?? null;
   const address = listing.address ?? {};
-  const suburb = address.suburb;
-  const state = address.state;
-  const postcode = address.postcode;
-  const shortAddress = address.display?.shortAddress;
-  const fullAddress = address.display?.fullAddress;
-  const propertyType = listing.propertyType?.id;
+  const suburb = address.suburb ?? null;
+  const state = address.state ?? null;
+  const postcode = address.postcode ?? null;
+  const shortAddress = address.display?.shortAddress ?? null;
+  const fullAddress = address.display?.fullAddress ?? null;
+  const propertyType = listing.propertyType?.id ?? null;
   const listingCompany = listing.listingCompany ?? {};
-  const listingCompanyId = listingCompany.id;
-  const listingCompanyName = listingCompany.name;
+  const listingCompanyId = listingCompany.id ?? null;
+  const listingCompanyName = listingCompany.name ?? null;
   const listingCompanyPhone = parsePhone(listingCompany.businessPhone);
   const features = listing.generalFeatures ?? {};
-  const bedrooms = features.bedrooms?.value;
-  const bathrooms = features.bathrooms?.value;
-  const parkingSpaces = features.parkingSpaces?.value;
+  const bedrooms = features.bedrooms?.value ?? null;
+  const bathrooms = features.bathrooms?.value ?? null;
+  const parkingSpaces = features.parkingSpaces?.value ?? null;
   const propertySizes = listing.propertySizes ?? {};
-  const buildingSize = propertySizes.building?.displayValue;
-  const buildingSizeUnit = propertySizes.building?.sizeUnit?.displayValue;
-  const landSize = parseFloat((propertySizes.land?.displayValue || '').replace(/,/g, ''));
-  const landSizeUnit = propertySizes.land?.sizeUnit?.displayValue;
-  const priceText = listing.price?.display ?? '';
+  const buildingSizeText = propertySizes.building?.displayValue ?? null;
+  const buildingSize = typeof buildingSizeText === "string" ? parseFloat(buildingSizeText.replace(/,/g, "")) : null;
+  const buildingSizeUnit = propertySizes.building?.sizeUnit?.displayValue ?? null;
+  const landSizeText = propertySizes.land?.displayValue ?? null;
+  const landSize = typeof landSizeText === "string" ? parseFloat(landSizeText.replace(/,/g, '')) : null;
+  const landSizeUnit = propertySizes.land?.sizeUnit?.displayValue ?? null;
+  const priceText = listing.price?.display ?? null;
   const price = parsePriceText(priceText);
-  const soldDate = listing.dateSold?.display;
+  const soldDate = listing.dateSold?.display ?? null;
   const auction = listing.auction ?? {};
-  const auctionDate = auction.dateTime?.value;
-  const availableDateText = listing.availableDate?.display;
+  const auctionDate = auction.dateTime?.value ?? null;
+  const availableDateText = listing.availableDate?.display ?? null;
   const availableDate = parseAvailability(availableDateText);
-  const description = listing.description ?? '';
-  const images = (listing.media?.images ?? []).map((media) => getImage(media));
-  const imagesFloorplans = (listing.media?.floorplans ?? []).map((media) => getImage(media));
-  const listers = (listing.listers ?? []).map((lister) => getLister(lister));
-  const inspections = (listing.inspections ?? []).map((inspection) => getInspection(inspection));
+  const description = listing.description ?? null;
+  const images = (listing.media?.images ?? []).map((media) => getImage(media)).filter((image) => image !== null);
+  const imagesFloorplans = (listing.media?.floorplans ?? []).map((media) => getImage(media)).filter((image) => image !== null);
+  const listers = (listing.listers ?? []).map((lister) => getLister(lister)).filter((lister) => lister !== null);
+  const inspections = (listing.inspections ?? []).map((inspection) => getInspection(inspection)).filter((inspection) => inspection !== null);
 
   return {
       propertyId,
