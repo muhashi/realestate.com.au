@@ -2,6 +2,57 @@ import got from "got";
 import generateGraphQLPayload from "./graphql/generateGraphQLPayload.js";
 import parseListing from "./helpers/parseListing.js";
 
+/**
+ * Gets the results object from the GraphQL response
+ * @param {object} json - raw http response as json object
+ * @param {string} channel - channel that request was made to - buy, rent, sold
+ * @returns object containing listing details
+ */
+export function parseResults(json, channel) {
+  const data = json?.data ?? {};
+  const channelSearch = data[`${channel}Search`] ?? {};
+  return channelSearch?.results ?? {};
+}
+
+/**
+ * Extracts all listings from the GraphQL response and returns them as an array
+ * @param {object} json - raw http response as json
+ * @param {string} channel - channel that request was made to - buy, rent, sold
+ * @returns list of all listing objects
+ */
+export function getListingsFromResults(json, channel) {
+  const results = parseResults(json, channel);
+  const exactListings = results?.exact?.items ?? [];
+  const surroundingListings = results?.surrounding?.items ?? [];
+  const dataList = [...exactListings, ...surroundingListings];
+
+  return dataList.map((data) => (data ?? {}).listing ?? {});
+}
+
+/**
+ * Determines whether the search should be stopped based on the accrued listings and the latest API response
+ * @param {object[]} listings - list of all listing objects found so far
+ * @param {object} responseJson - raw http response as json
+ * @param {string} channel - channel that request was made to - buy, rent, sold
+ * @param {int} limit - maximum number of listings to return
+ * @returns - true if search should be stopped, false otherwise
+ */
+function searchCompleted(listings, responseJson, channel, limit) {
+
+  if (!responseJson || !getListingsFromResults(responseJson, channel)) {
+    return true;
+  }
+
+  if (limit >= 0 && listings.length >= limit) {
+    return true;
+  }
+
+  const results = parseResults(responseJson, channel);
+  const moreResultsAvailable = results?.pagination?.moreResultsAvailable ?? false;
+
+  return !moreResultsAvailable;
+}
+
 const userAgents = [
     "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/104.0.0.0 Safari/537.36",
     "Mozilla/4.0 (compatible; MSIE 6.0; Windows NT 5.1; FSL 7.0.6.01001)",
@@ -46,7 +97,12 @@ const defaultOptions = {
   sortType: "relevance",
 }
 
-export async function searchRealEstateDotCom(options = {}) {
+/**
+ * Searches realestate.com.au for listings based on the provided options
+ * @param {object} options - see the README or the defaultOptions object for all available options
+ * @returns {Promise<object[]>}
+ */
+export default async function searchRealEstateDotCom(options = {}) {
   const {
     limit,
     startPage,
@@ -72,6 +128,8 @@ export async function searchRealEstateDotCom(options = {}) {
 
   /**
    * Gets the query parameters for the GraphQL query
+   * @param {int} page - page number to get results for
+   * @returns {object} - query parameters
    */
   function formatQueryParameters(page = currentPage) {
     const pageSize = limit > maxSearchPageSize ? maxSearchPageSize : limit;
@@ -86,19 +144,19 @@ export async function searchRealEstateDotCom(options = {}) {
       ...(petsAllowed !== null) && {petsAllowed: true},
 
       priceRange: {
-        ...(minPrice !== null) && {minPrice: Math.max(minPrice, 0)},
-        ...(maxPrice !== null) && {maxPrice: Math.max(maxPrice, 0)},
+        ...(minPrice !== null) && {minimum: Math.max(minPrice, 0).toString()},
+        ...(maxPrice !== null) && {maximum: Math.max(maxPrice, 0).toString()},
       },
 
       bedroomsRange: {
-        ...(minBedrooms !== null) && {minBedrooms: Math.max(minBedrooms, 0)},
-        ...(maxBedrooms !== null) && {maxBedrooms: Math.max(maxBedrooms, 0)},
+        ...(minBedrooms !== null) && {minimum: Math.max(minBedrooms, 0).toString()},
+        ...(maxBedrooms !== null) && {maximum: Math.max(maxBedrooms, 0).toString()},
       },
 
       minimumBathroom: minBathrooms,
       minimumCars: minCarspaces,
       ...(minLandArea !== null) && {landSize: {
-        minLandArea: Math.max(minLandArea, 0),
+        minimum: Math.max(minLandArea, 0).toString(),
       }},
       constructionStatus,
       propertyTypes,
@@ -117,21 +175,6 @@ export async function searchRealEstateDotCom(options = {}) {
     };
   }
 
-  function parseResults(json) {
-    const data = json?.data ?? {};
-    const channelSearch = data[`${channel}Search`] ?? {};
-    return channelSearch?.results ?? {};
-  }
-
-  function getListingsFromResults(json) {
-    const results = parseResults(json);
-    const exactListings = results?.exact?.items ?? [];
-    const surroundingListings = results?.surrounding?.items ?? [];
-    const dataList = [...exactListings, ...surroundingListings];
-
-    return dataList.map((data) => data.listing ?? {});
-  }
-
   async function fetchPage(pageNumber) {
     const queryParameters = formatQueryParameters(pageNumber);
     const json = generateGraphQLPayload(channel, queryParameters);
@@ -147,32 +190,17 @@ export async function searchRealEstateDotCom(options = {}) {
     }
   }
 
-  function searchCompleted(listings, responseJson) {
-    if (!responseJson || !getListingsFromResults(responseJson)) {
-      return true;
-    }
-
-    if (limit >= 0 && listings.length >= limit) {
-      return true;
-    }
-
-    const results = parseResults(responseJson);
-    const moreResultsAvailable = results?.pagination?.moreResultsAvailable ?? false;
-
-    return !moreResultsAvailable;
-  }
-
   let currentPage = startPage;
   let listings = [];
   let responseJson;
 
   do {
     responseJson = await fetchPage(currentPage);
-    const newListings = getListingsFromResults(responseJson);
+    const newListings = getListingsFromResults(responseJson, channel);
     const newParsedListings = newListings.map(parseListing);
     listings = [...listings, ...newParsedListings];
     currentPage += 1;
-  } while (!searchCompleted(listings, responseJson));
+  } while (!searchCompleted(listings, responseJson, channel, limit));
 
   return listings;
 }
