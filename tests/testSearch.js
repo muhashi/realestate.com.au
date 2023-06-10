@@ -205,3 +205,17 @@ test.serial("searchRealEstateDotCom returns homes with minCarspaces", async (t) 
 
   listings.filter(listing => listing.parkingSpaces).forEach(listing => t.true(listing.parkingSpaces >= 3));
 });
+
+test.serial("searchRealEstateDotCom returns homes with minLandArea", async (t) => {
+  const listings = await searchRealEstateDotCom({
+    limit: 20,
+    minLandArea: 400,
+  });
+
+  t.true(Array.isArray(listings));
+  t.true(listings.length === 20);
+  t.true(listings.filter(listing => listing.landSize).length > 0);
+  listings.forEach(listing => testListingProperties(t, listing));
+
+  listings.filter(listing => listing.landSize).forEach(listing => t.true(listing.landSize >= 400));
+});

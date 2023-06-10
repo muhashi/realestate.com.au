@@ -92,6 +92,24 @@ function getInspection(inspection) {
   };
 }
 
+function hectaresToMetresSquared(hectares) {
+  return hectares * 10000;
+}
+
+function parseLandSize(landSizeText, landSizeUnit) {
+  let landSize = typeof landSizeText === "string" ? parseFloat(landSizeText.replace(/,/g, '')) : null;
+
+  if (landSizeUnit === "ha" && typeof landSize === "number") {
+    landSize = hectaresToMetresSquared(landSize);
+    landSizeUnit = "m²";
+  }
+
+  return [
+    landSize,
+    landSizeUnit
+  ];
+}
+
 export default function parseListing(listing) {
   if (!listing || typeof listing !== "object") {
     return null;
@@ -119,9 +137,11 @@ export default function parseListing(listing) {
   const buildingSizeText = propertySizes.building?.displayValue ?? null;
   const buildingSize = typeof buildingSizeText === "string" ? parseFloat(buildingSizeText.replace(/,/g, "")) : null;
   const buildingSizeUnit = propertySizes.building?.sizeUnit?.displayValue ?? null;
+  let landSizeUnit = propertySizes.land?.sizeUnit?.displayValue ?? null;
   const landSizeText = propertySizes.land?.displayValue ?? null;
-  const landSize = typeof landSizeText === "string" ? parseFloat(landSizeText.replace(/,/g, '')) : null;
-  const landSizeUnit = propertySizes.land?.sizeUnit?.displayValue ?? null;
+  let landSize;
+  [landSize, landSizeUnit] = parseLandSize(landSizeText, landSizeUnit);
+
   const priceText = listing.price?.display ?? null;
   const price = parsePriceText(priceText);
   const soldDate = listing.dateSold?.display ?? null;
