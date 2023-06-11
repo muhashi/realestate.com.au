@@ -2,7 +2,7 @@
   "name": "realestate.com.au",
   "version": "0.0.0",
   "description": "Get real estate data from realestate.com.au",
-  "license": "MIT",
+  "license": "CC0-1.0",
   "repository": "muhashi/realestate.com.au",
   "author": {
     "name": "muhashi",
