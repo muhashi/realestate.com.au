@@ -367,7 +367,7 @@ Default: `[]`
 
 Array of inspection objects, in the format:
 
-```json
+```
 {
   endTime: '2023-06-11T13:15:00+08:00',
   label: 'Open Sun 11 Jun 12:45 pm',
@@ -397,7 +397,7 @@ Default: `[]`
 
 Array of objects containing details of the property's listers. Example object:
 
-```json
+```
 {
   agentId: '12980129801',
   id: '2527777',
