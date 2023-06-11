@@ -36,6 +36,8 @@ function testListingProperties(t, listing) {
   t.true(listing.hasOwnProperty("soldDate"));
   t.true(listing.hasOwnProperty("state"));
   t.true(listing.hasOwnProperty("suburb"));
+  t.true(listing.hasOwnProperty("bondText"));
+  t.true(listing.hasOwnProperty("bond"));
 
   t.true(typeof listing.auctionDate === "string" || listing.auctionDate === null);
   t.true(typeof listing.availableDate === "string" || listing.availableDate === null);
@@ -66,8 +68,10 @@ function testListingProperties(t, listing) {
   t.true(typeof listing.soldDate === "string" || listing.soldDate === null);
   t.true(typeof listing.state === "string" || listing.state === null);
   t.true(typeof listing.suburb === "string" || listing.suburb === null);
+  t.true(typeof listing.bondText === "string" || listing.bondText === null);
+  t.true(typeof listing.bond === "number" || listing.bond === null);
 
-  t.is(Object.keys(listing).length, 29);
+  t.is(Object.keys(listing).length, 31);
 }
 
 test.serial("searchRealEstateDotCom returns an array of listings", async (t) => {
@@ -218,4 +222,68 @@ test.serial("searchRealEstateDotCom returns homes with minLandArea", async (t) =
   listings.forEach(listing => testListingProperties(t, listing));
 
   listings.filter(listing => listing.landSize).forEach(listing => t.true(listing.landSize >= 400));
+});
+
+test.serial("searchRealEstateDotCom with a keyword", async (t) => {
+  const listings = await searchRealEstateDotCom({
+    limit: 20,
+    keywords: ["train"],
+  });
+
+  t.true(Array.isArray(listings));
+  t.true(listings.length === 20);
+  t.true(listings.filter(listing => listing.description).length > 0);
+  listings.forEach(listing => testListingProperties(t, listing));
+
+  listings.filter(listing => listing.description).map(listing => listing.description.toLowerCase()).forEach(description => t.true(description.includes("train")));
+});
+
+test.serial("searchRealEstateDotCom with multiple keywords", async (t) => {
+  const listings = await searchRealEstateDotCom({
+    limit: 20,
+    keywords: ["car", "bus"],
+  });
+
+  t.true(Array.isArray(listings));
+  t.true(listings.length === 20);
+  t.true(listings.filter(listing => listing.description).length > 0);
+  listings.forEach(listing => testListingProperties(t, listing));
+
+  const descriptions = listings.filter(listing => listing.description).map(listing => listing.description.toLowerCase());
+  descriptions.forEach(description => t.true(description.includes("car") || description.includes("bus")));
+  descriptions.some(description => !description.includes("car"));
+  descriptions.some(description => !description.includes("bus"));
+});
+
+test.serial("searchRealEstateDotCom sorts by auction time", async (t) => {
+  const listings = await searchRealEstateDotCom({
+    limit: 20,
+    sortType: "next-auction-time",
+  });
+
+  t.true(Array.isArray(listings));
+  t.true(listings.length === 20);
+  t.true(listings.filter(listing => listing.auctionDate).length === 20);
+  listings.forEach(listing => testListingProperties(t, listing));
+
+  const auctionTimestamps = listings.map(listing => listing.auctionDate).map(date => (new Date(date)).getTime());
+  auctionTimestamps.forEach((timestamp, i) => i === 0 ? null : t.true(auctionTimestamps[i - 1] <= timestamp));
+});
+
+test.serial("searchRealEstateDotCom sorts by inspection time", async (t) => {
+  const listings = await searchRealEstateDotCom({
+    limit: 20,
+    sortType: "next-inspection-time",
+  });
+
+  t.true(Array.isArray(listings));
+  t.true(listings.length === 20);
+  t.true(listings.filter(listing => listing.inspections?.length).length === 20);
+  listings.forEach(listing => testListingProperties(t, listing));
+
+  const inspectionTimestamps =
+    listings.map(listing => (
+      listing.inspections.map(inspection => new Date(inspection.startTime).getTime()).reduce((a, b) => Math.min(a, b), Infinity)
+    ));
+    inspectionTimestamps.forEach((timestamp, i) => i === 0 ? null : t.true(inspectionTimestamps[i - 1] <= timestamp));
 });
