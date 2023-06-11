@@ -1,37 +1,39 @@
 {
-	"name": "unicorn-fun",
-	"version": "0.0.0",
-	"description": "Get real estate data from realestate.com.au",
-	"license": "MIT",
-	"repository": "muhashi/realestate.com.au",
-	"author": {
-		"name": "muhashi",
-		"email": "muhamedoes+muhashi@gmail.com",
-		"url": "https://muhashi.com"
-	},
-	"type": "module",
-	"exports": "./index.js",
-	"engines": {
-		"node": ">=16"
-	},
-	"scripts": {
-		"test": "ava"
-	},
-	"files": [
-		"index.js"
-	],
-	"keywords": [
-		"realestate.com.au",
-		"real estate",
-		"house",
-		"home",
-		"houses",
-		"homes"
-	],
-	"devDependencies": {
-		"ava": "^5.3.0"
-	},
-	"dependencies": {
-		"got": "^13.0.0"
-	}
+  "name": "realestate.com.au",
+  "version": "0.0.0",
+  "description": "Get real estate data from realestate.com.au",
+  "license": "MIT",
+  "repository": "muhashi/realestate.com.au",
+  "author": {
+    "name": "muhashi",
+    "email": "muhamedoes+muhashi@gmail.com",
+    "url": "https://muhashi.com"
+  },
+  "type": "module",
+  "exports": "./index.js",
+  "engines": {
+    "node": ">=16"
+  },
+  "scripts": {
+    "test": "ava"
+  },
+  "files": [
+    "index.js"
+  ],
+  "keywords": [
+    "realestate.com.au",
+    "real estate",
+    "realestate",
+    "rent",
+    "house",
+    "housing",
+    "homes",
+    "api"
+  ],
+  "devDependencies": {
+    "ava": "^5.3.0"
+  },
+  "dependencies": {
+    "got": "^13.0.0"
+  }
 }
