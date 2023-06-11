@@ -128,6 +128,7 @@ test.serial("searchRealEstateDotCom returns homes from surrounding suburbs", asy
   const listings = await searchRealEstateDotCom({
     limit: 50,
     locations: ["Nindooinbah, QLD 4285"],
+    surroundingSuburbs: true,
   });
 
   t.true(Array.isArray(listings));

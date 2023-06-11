@@ -178,9 +178,9 @@ How to sort the listing results. Can be one of the following: `"relevance", "pri
 ##### surroundingSuburbs
 
 Type: `bool`\
-Default: `true`
+Default: `false`
 
-Whether to include listings from surrounding suburbs from the selected ones.
+Whether to include listings from surrounding suburbs of the selected ones.
 
 ##### excludeNoSalePrice
 

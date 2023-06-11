@@ -79,7 +79,7 @@ const defaultOptions = {
   startPage: 1,
   channel: "buy", // "buy", "rent", "sold"
   locations: [],
-  surroundingSuburbs: true,
+  surroundingSuburbs: false,
   excludeNoSalePrice: false,
   furnished: null,
   petsAllowed: null,
