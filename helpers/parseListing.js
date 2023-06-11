@@ -114,6 +114,7 @@ export default function parseListing(listing) {
   if (!listing || typeof listing !== "object") {
     return null;
   }
+  console.log(listing);
 
   const propertyId = listing.id ?? null;
   const badge = listing.badge?.label ?? null;
@@ -141,6 +142,8 @@ export default function parseListing(listing) {
   const landSizeText = propertySizes.land?.displayValue ?? null;
   let landSize;
   [landSize, landSizeUnit] = parseLandSize(landSizeText, landSizeUnit);
+  const bondText = listing.bond?.display ?? null;
+  const bond = parsePriceText(bondText);
 
   const priceText = listing.price?.display ?? null;
   const price = parsePriceText(priceText);
@@ -185,5 +188,7 @@ export default function parseListing(listing) {
       imagesFloorplans,
       listers,
       inspections,
+      bondText,
+      bond,
   };
 }
