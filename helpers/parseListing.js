@@ -114,7 +114,6 @@ export default function parseListing(listing) {
   if (!listing || typeof listing !== "object") {
     return null;
   }
-  console.log(listing);
 
   const propertyId = listing.id ?? null;
   const badge = listing.badge?.label ?? null;
