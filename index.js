@@ -75,7 +75,7 @@ const headers = {
 const maxSearchPageSize = 500;
 
 const defaultOptions = {
-  limit: -1,
+  limit: 20,
   startPage: 1,
   channel: "buy", // "buy", "rent", "sold"
   locations: [],
