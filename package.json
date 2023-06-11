@@ -18,7 +18,9 @@
     "test": "ava"
   },
   "files": [
-    "index.js"
+    "index.js",
+    "graphql",
+    "helpers"
   ],
   "keywords": [
     "realestate.com.au",
