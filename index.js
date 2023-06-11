@@ -77,7 +77,7 @@ const maxSearchPageSize = 500;
 const defaultOptions = {
   limit: -1,
   startPage: 1,
-  channel: "buy",
+  channel: "buy", // "buy", "rent", "sold"
   locations: [],
   surroundingSuburbs: true,
   excludeNoSalePrice: false,
@@ -90,11 +90,11 @@ const defaultOptions = {
   maxBedrooms: null,
   minBathrooms: null,
   minCarspaces: null,
-  minLandArea: null,
-  constructionStatus: null,
-  propertyTypes: [], // "house", "unit apartment", "townhouse", "villa", "land", "acreage", "retire", "unitblock"
+  minLandArea: null, // in square meters
+  constructionStatus: null, // "ESTABLISHED", "NEW"
+  propertyTypes: [], // "house", "unit apartment", "townhouse", "villa", "land", "acreage", "retire", "unitblock", "project-estate"
   keywords: [],
-  sortType: "relevance",
+  sortType: "relevance", // "relevance", "price-desc", "price-asc", "new-desc", "new-asc", "next-inspection-time", "next-auction-time"
 }
 
 /**
@@ -171,7 +171,7 @@ export default async function searchRealEstateDotCom(options = {}) {
       pageSize, 
       localities,
       filters,
-      sort_type: sortType,
+      sortType,
     };
   }
 
