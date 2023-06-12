@@ -5,7 +5,7 @@ on:
   pull_request:
     branches: [ "main" ]
   schedule:
-    - cron: "0 0 * * 1" # every monday
+    - cron: "43 4 * * 1" # every monday 04:43 UTC (during a low load time)
 
 jobs:
   test:
