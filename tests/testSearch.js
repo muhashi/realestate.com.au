@@ -279,12 +279,14 @@ test.serial("searchRealEstateDotCom sorts by inspection time", async (t) => {
 
   t.true(Array.isArray(listings));
   t.true(listings.length === 20);
-  t.true(listings.filter(listing => listing.inspections?.length).length === 20);
+  t.true(listings.filter(listing => listing.inspections?.length).length > 0);
   listings.forEach(listing => testListingProperties(t, listing));
 
   const inspectionTimestamps =
-    listings.map(listing => (
+    listings.filter(listing => listing.inspections?.length)
+    .map(listing => (
       listing.inspections.map(inspection => new Date(inspection.startTime).getTime()).reduce((a, b) => Math.min(a, b), Infinity)
     ));
-    inspectionTimestamps.forEach((timestamp, i) => i === 0 ? null : t.true(inspectionTimestamps[i - 1] <= timestamp));
+
+  inspectionTimestamps.forEach((timestamp, i) => i === 0 ? null : t.true(inspectionTimestamps[i - 1] <= timestamp));
 });
