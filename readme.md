@@ -1,4 +1,6 @@
-# realestate.com.au api
+# realestate.com.au api (deprecated)
+
+**realestate.com.au has added anti-scraping measures to its API, so this package no longer works. they are using Kasada which is known to be difficult to work around, but [here is a blog post that gives some suggestions](https://hackernoon.com/how-to-scrape-kasada-protected-websites) (i dont know if this still works). RIP**
 
 [Install](#install) •	[Usage](#usage) •	[API](#api) •	[API Response](#api-response) •	[Acknowledgement](#acknowledgement)
 
